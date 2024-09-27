@@ -1,0 +1,14 @@
+# Ignore arquivos do Visual Studio e .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+
+# Ignore arquivos específicos do Node.js (para o front-end)
+node_modules/
+dist/
+
+# Ignore arquivos temporários do sistema
+*.log
+.DS_Store

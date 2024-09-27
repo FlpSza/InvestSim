@@ -1,7 +1,6 @@
 using InvestmentSimulator.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -15,7 +14,7 @@ builder.Services.AddDbContext<InvestmentSimulatorContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
     new MySqlServerVersion(new Version(8, 0, 21))));
 
-// Configurando o CORS
+// Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -26,7 +25,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Obter a chave do appsettings.json
+// Adicionar HttpClient para AlphaVantageService
+builder.Services.AddHttpClient<AlphaVantageService>();
+
+// Obter a chave JWT do appsettings.json
 var jwtKey = builder.Configuration["Jwt:Key"];
 
 // Configurar autenticação JWT
@@ -38,11 +40,11 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer = false,  // Ajuste conforme necessário (ex: true)
+        ValidateAudience = false,  // Ajuste conforme necessário (ex: true)
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true, // Certifique-se de que a validação da chave está ativada
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)) // Usar a chave do appsettings
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
@@ -59,7 +61,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-        c.RoutePrefix = string.Empty; // Abre o Swagger na raiz do app
+        c.RoutePrefix = string.Empty;
     });
 }
 
@@ -77,8 +79,8 @@ app.UseRouting();
 
 app.UseCors("AllowReactApp");
 
-app.UseAuthentication(); // Não esqueça de adicionar o middleware de autenticação
-app.UseAuthorization();
+app.UseAuthentication(); // Middleware de autenticação
+app.UseAuthorization();  // Middleware de autorização
 
 app.MapControllers();
 
